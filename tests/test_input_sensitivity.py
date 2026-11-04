@@ -1,19 +1,8 @@
 """The decision must change with the input. This wraps the validation battery."""
 
-import pytest
-
 from goal_chainer.validation import run_validation
 
 
-@pytest.mark.xfail(
-    strict=False,
-    reason=(
-        "Known engine limit under PeTTaChainer rT 202b9379 (docs/architecture.md, PC5): "
-        "modus ponens from a premise with strength < 1 roughly halves the conclusion "
-        "confidence (0.884 -> 0.44), so hold_external_update drops below "
-        "publish_redacted_summary in facts_not_ready. Upstream, no local shim."
-    ),
-)
 def test_decision_depends_on_the_request():
     report = run_validation()
 
