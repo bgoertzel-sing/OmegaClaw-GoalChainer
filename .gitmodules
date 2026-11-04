@@ -4,7 +4,7 @@
 	branch = deontic-directive
 [submodule "external/PeTTaChainer"]
 	path = external/PeTTaChainer
-	url = https://github.com/MesTTo/PeTTaChainer.git
+	url = https://github.com/rTreutlein/PeTTaChainer.git
 	branch = master
 [submodule "external/omegaclaw-deontic"]
 	path = external/omegaclaw-deontic
