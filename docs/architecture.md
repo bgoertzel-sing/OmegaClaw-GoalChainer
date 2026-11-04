@@ -147,3 +147,10 @@ The further steps are `directive-complete` once the action is executed, plan
 recovery from event logs via `lib_directive`'s process-mining, and feeding the
 parsed SH propositions into SNARS so the belief layer reasons over the request's
 own statements with polarity and provenance.
+
+## Known engine limits (PeTTaChainer rT 202b9379)
+
+- **PC3, And-elimination confidence.** A stored `(And A B)` derives its conjuncts, but the confidence is conservatively 0
+  under 202b9379 (conjuncts `c≈3.7e-16`, the stored And `c=0.0`; the event_node.pl:82 variance bound exceeds s(1-s)).
+  Evidence that relies on And-elimination therefore contributes no confidence. No local patch: the upstream repro is
+  in wmtm `upstream/pettachainer/PC3_202b9379.md`, pending Roman.
