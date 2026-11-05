@@ -152,9 +152,14 @@ own statements with polarity and provenance.
 
 The pymetta runtime (0.9.4+goalchainer.native.2) cannot load rT 202b9379: refusals PY1-PY5
 (nested annotated arrow, variable effect arrow, quoted import list, yall re-import, one name from two Prolog sources).
-Standalone repros and a table: wmtm `upstream/pettachainer/py1..py5_*`. 186-test evidence suite
-(tests/test_evidence_chainer.py + tests/test_memory_evidence.py) with `GOALCHAINER_PETTACHAINER_DIR` at 202b9379:
-117 failed, 69 passed (38b1473: 186 passed). No local engine shim is shipped (cos answer 4). The gitlink therefore
+Standalone repros and a table: wmtm `upstream/pettachainer/py1..py5_*`. 186-test evidence suite: this is NOT in this repo.
+It is `tests/test_evidence_chainer.py` + `tests/test_memory_evidence.py` in the GoalChainer v2 pymetta runtime
+(github MesTTo/OmegaClaw-GoalChainer @ 5c6ecda, checked out locally at
+`runtimes/goalchainer-v2-pymetta-native.2/src`, with its own `.venv` holding pymetta 0.9.4+goalchainer.native.2).
+Command, run from that checkout:
+`GOALCHAINER_PETTACHAINER_DIR=<this repo>/external/PeTTaChainer .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_evidence_chainer.py tests/test_memory_evidence.py`.
+With the gitlink at 202b9379: 117 failed, 69 passed. With the gitlink at 38b1473: 186 passed (85 s, rc=0).
+This repo's own `tests/test_evidence_chainer.py` (7 tests) is a different, smaller file: 7/7 pass at 38b1473. No local engine shim is shipped (cos answer 4). The gitlink therefore
 stays at 38b1473 until andy decides between a pymetta upgrade (a), an upstream rT change (b) or keeping this pin (c).
 
 ## Known engine limits (PeTTaChainer rT 202b9379)
