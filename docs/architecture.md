@@ -154,11 +154,11 @@ own statements with polarity and provenance.
   under 202b9379 (conjuncts `c≈3.7e-16`, the stored And `c=0.0`; the event_node.pl:82 variance bound exceeds s(1-s)).
   Evidence that relies on And-elimination therefore contributes no confidence. No local patch: the upstream repro is
   in wmtm `upstream/pettachainer/PC3_202b9379.md`, pending Roman.
-- **PC5, modus-ponens confidence from a premise with strength < 1.** With the fact `(ProtectsPrivacy x)` at
+- **PC8, modus-ponens confidence from a premise with strength < 1.** With the fact `(ProtectsPrivacy x)` at
   `STV 0.95 0.92` and the rule `(Implication (ProtectsPrivacy $x) (Acceptable $x))` at `STV 0.85 0.92`, the
   old runtime (PeTTaChainer 38b1473) derives `Acceptable x` at `(0.8175, 0.884)`, while 202b9379 gives `c≈0.44`
   (fact at 0.95/0.97: 0.9315 old, 0.449 rT). Facts at strength 1.0 match on both engines (0.92, 0.97). This is the
   same moment-bound family as PC3. Effect: in the validation case `facts_not_ready`, `hold_external_update` falls
-  below `publish_redacted_summary`, so `test_decision_depends_on_the_request` is marked xfail (non-strict).
+  below `publish_redacted_summary`, so `test_decision_depends_on_the_request` fails; it is left failing (no xfail) and listed as blocked on upstream PC8.
   It does not come from the rule-format change (`Premises`/`Conclusions` -> plain `Implication`). No local
-  patch; repro `mp_probe.py` / `grade_probe.py` in the p1-engine evidence bundle, pending Roman.
+  patch; standalone repro wmtm `upstream/pettachainer/pc8_modus_ponens_202b9379.metta`, pending Roman.
