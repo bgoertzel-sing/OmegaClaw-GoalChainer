@@ -33,10 +33,10 @@ BACKWARD_PREMISE_PREFILTER = True
 # Shared PLN implication rules: a supporting / redacted / privacy-protecting action
 # is acceptable; a privacy-risking action is not.
 _RULES = (
-    "(: support_to_accept (Implication (SupportsCollective $x) (Acceptable $x)) (STV 0.92 0.95))",
-    "(: redaction_to_accept (Implication (Redacted $x) (Acceptable $x)) (STV 0.95 0.97))",
-    "(: protect_to_accept (Implication (ProtectsPrivacy $x) (Acceptable $x)) (STV 0.85 0.92))",
-    "(: risk_to_accept (Implication (RisksPrivacy $x) (Acceptable $x)) (STV 0.05 0.9))",
+    "(: support_to_accept (Implication (Premises (SupportsCollective $x)) (Conclusions (Acceptable $x))) (STV 0.92 0.95))",
+    "(: redaction_to_accept (Implication (Premises (Redacted $x)) (Conclusions (Acceptable $x))) (STV 0.95 0.97))",
+    "(: protect_to_accept (Implication (Premises (ProtectsPrivacy $x)) (Conclusions (Acceptable $x))) (STV 0.85 0.92))",
+    "(: risk_to_accept (Implication (Premises (RisksPrivacy $x)) (Conclusions (Acceptable $x))) (STV 0.05 0.9))",
 )
 
 _ANSWER_RE = re.compile(
@@ -71,7 +71,7 @@ def grade_beliefs(evidence: IncidentEvidence) -> tuple[dict[str, Belief], str, l
     prefilter = str(BACKWARD_PREMISE_PREFILTER).lower()
     program = (
         "!(import! &self petta_chainer)\n"
-        "!(import! &self core/logic_configs/pln)\n"
+        "!(import! &self logic_configs/pln)\n"
         f"!(set-backward-premise-prefilter {KB} {prefilter})\n"
         f"!(superpose ({adds}))\n"
         f"{queries}\n"
