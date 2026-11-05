@@ -110,7 +110,7 @@ This is how the pieces line up with the existing repos:
 | --- | --- | --- |
 | Agent loop and long-term memory | `external/OmegaClaw-Core` at `fb5afb6` | Target integration point after the prototype is stable |
 | Defeasible/deontic norms | `OmegaClaw-Core lib_deontic` on PeTTa | Forbidden/obligated/permitted read from the real engine's tagged conclusions; the static policy table is display-only |
-| Contextual evidence | `external/PeTTaChainer` at `36b3fe6` | Contextual query on PeTTa grades each action's acceptability belief with named fact and rule provenance; `GOALCHAINER_PETTACHAINER_DIR` can override the checkout |
+| Contextual evidence | `external/PeTTaChainer` at `38b1473` (pymetta-native.2 pin; rT 202b9379 blocked, see below) | Contextual query on PeTTa grades each action's acceptability belief with named fact and rule provenance; `GOALCHAINER_PETTACHAINER_DIR` can override the checkout |
 | Runtime | PeTTa (`PeTTa/src/main.pl`, swipl 9.3.x) | All MeTTa runs here; no hyperon binary |
 | Proof audit | PeTTaChainer `artifacts/showcase` under `PETTACHAINER_DIR` | Reads sealed showcase artifacts and verifier output for the demo audit skill |
 | Ontology and propositions | `/home/user/Dev/mettabase`, `/home/user/Dev/colore` | Read-only COLORE summary plus HyperBase-ready structured proposition facts |
@@ -147,6 +147,15 @@ The further steps are `directive-complete` once the action is executed, plan
 recovery from event logs via `lib_directive`'s process-mining, and feeding the
 parsed SH propositions into SNARS so the belief layer reasons over the request's
 own statements with polarity and provenance.
+
+## GoalChainer on PeTTaChainer rT 202b9379: blocked (pin stays 38b1473)
+
+The pymetta runtime (0.9.4+goalchainer.native.2) cannot load rT 202b9379: refusals PY1-PY5
+(nested annotated arrow, variable effect arrow, quoted import list, yall re-import, one name from two Prolog sources).
+Standalone repros and a table: wmtm `upstream/pettachainer/py1..py5_*`. 186-test evidence suite
+(tests/test_evidence_chainer.py + tests/test_memory_evidence.py) with `GOALCHAINER_PETTACHAINER_DIR` at 202b9379:
+117 failed, 69 passed (38b1473: 186 passed). No local engine shim is shipped (cos answer 4). The gitlink therefore
+stays at 38b1473 until andy decides between a pymetta upgrade (a), an upstream rT change (b) or keeping this pin (c).
 
 ## Known engine limits (PeTTaChainer rT 202b9379)
 
