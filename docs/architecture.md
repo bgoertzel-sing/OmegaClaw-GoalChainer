@@ -110,7 +110,7 @@ This is how the pieces line up with the existing repos:
 | --- | --- | --- |
 | Agent loop and long-term memory | `external/OmegaClaw-Core` at `fb5afb6` | Target integration point after the prototype is stable |
 | Defeasible/deontic norms | `OmegaClaw-Core lib_deontic` on PeTTa | Forbidden/obligated/permitted read from the real engine's tagged conclusions; the static policy table is display-only |
-| Contextual evidence | `external/PeTTaChainer` at `36b3fe6` | Contextual query on PeTTa grades each action's acceptability belief with named fact and rule provenance; `GOALCHAINER_PETTACHAINER_DIR` can override the checkout |
+| Contextual evidence | `external/PeTTaChainer` at `38b1473` (pymetta-native.2 pin; rT 202b9379 blocked, see below) | Contextual query on PeTTa grades each action's acceptability belief with named fact and rule provenance; `GOALCHAINER_PETTACHAINER_DIR` can override the checkout |
 | Runtime | PeTTa (`PeTTa/src/main.pl`, swipl 9.3.x) | All MeTTa runs here; no hyperon binary |
 | Proof audit | PeTTaChainer `artifacts/showcase` under `PETTACHAINER_DIR` | Reads sealed showcase artifacts and verifier output for the demo audit skill |
 | Ontology and propositions | `/home/user/Dev/mettabase`, `/home/user/Dev/colore` | Read-only COLORE summary plus HyperBase-ready structured proposition facts |
@@ -147,3 +147,32 @@ The further steps are `directive-complete` once the action is executed, plan
 recovery from event logs via `lib_directive`'s process-mining, and feeding the
 parsed SH propositions into SNARS so the belief layer reasons over the request's
 own statements with polarity and provenance.
+
+## GoalChainer on PeTTaChainer rT 202b9379: blocked (pin stays 38b1473)
+
+The pymetta runtime (0.9.4+goalchainer.native.2) cannot load rT 202b9379: refusals PY1-PY5
+(nested annotated arrow, variable effect arrow, quoted import list, yall re-import, one name from two Prolog sources).
+Standalone repros and a table: wmtm `upstream/pettachainer/py1..py5_*`. 186-test evidence suite: this is NOT in this repo.
+It is `tests/test_evidence_chainer.py` + `tests/test_memory_evidence.py` in the GoalChainer v2 pymetta runtime
+(github MesTTo/OmegaClaw-GoalChainer @ 5c6ecda, checked out locally at
+`runtimes/goalchainer-v2-pymetta-native.2/src`, with its own `.venv` holding pymetta 0.9.4+goalchainer.native.2).
+Command, run from that checkout:
+`GOALCHAINER_PETTACHAINER_DIR=<this repo>/external/PeTTaChainer .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_evidence_chainer.py tests/test_memory_evidence.py`.
+With the gitlink at 202b9379: 117 failed, 69 passed. With the gitlink at 38b1473: 186 passed (85 s, rc=0).
+This repo's own `tests/test_evidence_chainer.py` (7 tests) is a different, smaller file: 7/7 pass at 38b1473. No local engine shim is shipped (cos answer 4). The gitlink therefore
+stays at 38b1473 until andy decides between a pymetta upgrade (a), an upstream rT change (b) or keeping this pin (c).
+
+## Known engine limits (PeTTaChainer rT 202b9379)
+
+- **PC3, And-elimination confidence.** A stored `(And A B)` derives its conjuncts, but the confidence is conservatively 0
+  under 202b9379 (conjuncts `c≈3.7e-16`, the stored And `c=0.0`; the event_node.pl:82 variance bound exceeds s(1-s)).
+  Evidence that relies on And-elimination therefore contributes no confidence. No local patch: the upstream repro is
+  in wmtm `upstream/pettachainer/PC3_202b9379.md`, pending Roman.
+- **PC8, modus-ponens confidence from a premise with strength < 1.** With the fact `(ProtectsPrivacy x)` at
+  `STV 0.95 0.92` and the rule `(Implication (ProtectsPrivacy $x) (Acceptable $x))` at `STV 0.85 0.92`, the
+  old runtime (PeTTaChainer 38b1473) derives `Acceptable x` at `(0.8175, 0.884)`, while 202b9379 gives `c≈0.44`
+  (fact at 0.95/0.97: 0.9315 old, 0.449 rT). Facts at strength 1.0 match on both engines (0.92, 0.97). This is the
+  same moment-bound family as PC3. Effect: in the validation case `facts_not_ready`, `hold_external_update` falls
+  below `publish_redacted_summary`, so `test_decision_depends_on_the_request` fails; it is left failing (no xfail) and listed as blocked on upstream PC8.
+  It does not come from the rule-format change (`Premises`/`Conclusions` -> plain `Implication`). No local
+  patch; standalone repro wmtm `upstream/pettachainer/pc8_modus_ponens_202b9379.metta`, pending Roman.

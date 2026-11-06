@@ -8,8 +8,9 @@ How PeTTa is driven (from reading PeTTa/src):
 - `swipl -q -s PeTTa/src/main.pl -- <file>.metta --silent`
 - `--silent` suppresses the compile/run trace, so stdout carries only the result
   of each `!(...)` form, one per line (filereader.pl, main.pl).
-- `(library X Y)` resolves under `<PeTTa>/X/Y`, so `(library OmegaClaw-Core ...)`
-  finds the fork vendored inside PeTTa.
+- `(library X Y)` resolves under `<PeTTa>/X/Y` on older PeTTa; on PeTTa >= 3681b9b
+  it needs a `library_path/1` entry ending in X, which `_library_path_goals` adds
+  for the OmegaClaw-Core copy vendored inside PeTTa.
 """
 
 from __future__ import annotations
@@ -39,6 +40,35 @@ def petta_swipl() -> str:
     return "swipl"
 
 
+def _library_dirs(root: Path) -> list[Path]:
+    """Directories that `(library X Y)` should resolve against.
+
+    PeTTa before compact-datatypes (e.g. 4ce1d0e) resolved `(library X Y)` as
+    `<PeTTa>/lib/../X/Y`. From 3681b9b on it only consults `library_path/1`
+    entries whose path ends in X, which `git-import!` registers. GoalChainer
+    does not git-import OmegaClaw-Core, so register the vendored copies here.
+    Override with GOALCHAINER_PETTA_LIBRARY_DIRS (os.pathsep separated).
+    """
+
+    configured = os.environ.get("GOALCHAINER_PETTA_LIBRARY_DIRS")
+    if configured:
+        return [Path(item) for item in configured.split(os.pathsep) if item]
+    found: list[Path] = []
+    for base in (root, root / "repos"):
+        candidate = base / "OmegaClaw-Core"
+        if candidate.is_dir():
+            found.append(candidate)
+    return found
+
+
+def _library_path_goals(root: Path) -> list[str]:
+    goals: list[str] = []
+    for directory in _library_dirs(root):
+        quoted = str(directory.absolute()).replace("\\", "\\\\").replace("'", "\\'")
+        goals += ["-g", f"assertz(library_path('{quoted}'))"]
+    return goals
+
+
 def run_metta(program: str, work_dir: Path | None = None) -> list[str]:
     """Run a MeTTa program on PeTTa and return the non-empty stdout result lines.
 
@@ -64,6 +94,7 @@ def run_metta(program: str, work_dir: Path | None = None) -> list[str]:
                 petta_swipl(),
                 "--stack_limit=8g",
                 "-q",
+                *_library_path_goals(root),
                 "-s",
                 str(main_pl),
                 "--",
